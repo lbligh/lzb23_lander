@@ -1,7 +1,15 @@
 .DS_Store
 
+spring
+
+lander
+
+*.o
+
 .vscode/
 
 .venv/
 
 luketest.py
+
+trajectories.txt
