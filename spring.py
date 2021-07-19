@@ -2,6 +2,7 @@
 # %matplotlib inline
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 
 def main():
@@ -13,9 +14,10 @@ def main():
     v_euler = v_verlet = 1
 
     # simulation time, timestep and time
-    t_max = 100
-    dt = 0.1
+    t_max = 1000
+    dt = 0.01
     t_array = np.arange(0, t_max, dt)
+    ana_t = np.arange(0, t_max, 0.1)
 
     # analytical constants
     omega = np.sqrt(k/m)
@@ -70,22 +72,37 @@ def main():
     x_array = np.array(verlet_x_list)
     v_array = np.array(verlet_v_list)
 
-    # plot the position-time graph
+    # plot the position-time graphs
     fig, ax = plt.subplots()
-    plt.xlabel('time (s)')
-    # ax.plot(t_array, euler_x_array, label='Euler')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Position (m)')
     ax.plot(t_array, x_array, label='Verlet')
-    ax.plot(t_array, B*np.sin(omega*t_array), label='Analytical')
-    plt.title('Position-time graph')
-    plt.legend()
+    ax.plot(ana_t, B*np.sin(omega*ana_t), label='Analytical')
+    plt.title(f'Position-time graph - verlet, dt = {dt}')
+    ax.legend()
+
+    fig, ax = plt.subplots()
+    plt.xlabel('Time (s)')
+    plt.ylabel('Position (m)')
+    ax.plot(t_array, euler_x_array, label='Euler')
+    ax.plot(ana_t, B*np.sin(omega*ana_t), label='Analytical')
+    plt.title(f'Position-time graph - euler, dt = {dt}')
+    ax.legend()
 
     fig, ax = plt.subplots()
     plt.xlabel('time (s)')
     plt.ylabel('velocity (m\s)')
-    # ax.plot(t_array, euler_v_array, label='Euler')
     ax.plot(t_array, v_array, label='Verlet')
-    ax.plot(t_array, np.cos(omega*t_array), label='Analytical')
-    plt.title('Velocity-time graph')
+    ax.plot(ana_t, np.cos(omega*ana_t), label='Analytical')
+    plt.title(f'Velocity-time graph - verlet, dt = {dt}')
+    ax.legend()
+
+    fig, ax = plt.subplots()
+    plt.xlabel('time (s)')
+    plt.ylabel('velocity (m\s)')
+    ax.plot(t_array, euler_v_array, label='Euler')
+    ax.plot(ana_t, np.cos(omega*ana_t), label='Analytical')
+    plt.title(f'Velocity-time graph - euler, dt = {dt}')
     ax.legend()
 
     plt.show()
