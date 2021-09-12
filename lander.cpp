@@ -17,7 +17,50 @@
 void autopilot(void)
 // Autopilot to adjust the engine throttle, parachute and attitude control
 {
-  // INSERT YOUR CODE HERE
+  double descent_rate, Kh, Kp, e, h, delta, P_out, current_mass, current_weight;
+
+  Kh = 18.5e-3;
+  Kp = 1.5;
+
+  current_mass = UNLOADED_LANDER_MASS + fuel * FUEL_CAPACITY * FUEL_DENSITY;
+  current_weight = GRAVITY * MARS_MASS * current_mass / (position.abs() * position.abs());
+  delta = current_weight / MAX_THRUST;
+
+  h = position.abs() - MARS_RADIUS;
+  descent_rate = velocity * position.norm();
+
+  e = -1 * (0.5 + Kh * h + descent_rate);
+  P_out = Kp * e;
+
+  cout << "e: " << e << endl;
+
+  if (P_out <= -1 * delta)
+    throttle = 0;
+  else if (P_out < 1 - delta && P_out > -1 * delta)
+    throttle = delta + P_out;
+  else
+    throttle = 1;
+
+  if (safe_to_deploy_parachute() && parachute_status == NOT_DEPLOYED && h <= 10000)
+  {
+    parachute_status = DEPLOYED;
+  }
+
+  cout
+      << "delta: " << delta << endl
+      << "thr: " << throttle << endl
+      << endl;
+
+  ofstream fout;
+  fout.open("trajectory5.txt", std::ios_base::app);
+  if (fout)
+  { // file opened successfully
+    fout << simulation_time << ' ' << h << ' ' << descent_rate << endl;
+  }
+  else
+  { // file did not open successfully
+    cout << "failed to open file" << endl;
+  }
 }
 
 void numerical_dynamics(void)
@@ -28,8 +71,6 @@ void numerical_dynamics(void)
   static vector3d prev_position;
   double current_mass;
   bool euler = false;
-
-  attitude_stabilization();
 
   current_mass = UNLOADED_LANDER_MASS + fuel * FUEL_CAPACITY * FUEL_DENSITY;
 
