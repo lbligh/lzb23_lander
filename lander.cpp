@@ -17,10 +17,18 @@
 void autopilot(void)
 // Autopilot to adjust the engine throttle, parachute and attitude control
 {
-  double descent_rate, Kh, Kp, e, h, delta, P_out, current_mass, current_weight;
+  double descent_rate, Kh, Kp, Kd, Ki, deriv, e, h, delta, P_out, current_mass, current_weight, prop, integ, der;
+  static double sum_errors, previous_error;
 
-  Kh = 18.5e-3;
-  Kp = 1.5;
+  if (simulation_time <= 0.5)
+  {
+    previous_error = 0;
+  }
+
+  Kh = 23.0e-3;
+  Kp = 2.3e-1;
+  Kd = 0.5e-1;
+  Ki = 0.01e-3;
 
   current_mass = UNLOADED_LANDER_MASS + fuel * FUEL_CAPACITY * FUEL_DENSITY;
   current_weight = GRAVITY * MARS_MASS * current_mass / (position.abs() * position.abs());
@@ -29,10 +37,17 @@ void autopilot(void)
   h = position.abs() - MARS_RADIUS;
   descent_rate = velocity * position.norm();
 
-  e = -1 * (0.5 + Kh * h + descent_rate);
-  P_out = Kp * e;
+  e = -1 * (1.0 + Kh * h + descent_rate);
+  deriv = (e - previous_error) / delta_t;
+  cout << "acc: " << descent_rate << " target: " << -(0.5 + Kh * h) << " e: " << e << endl;
 
-  cout << "e: " << e << endl;
+  prop = Kp * e;
+  integ = Ki * sum_errors;
+  der = Kd * deriv;
+
+  cout << "prop: " << prop << " int: " << integ << " dev: " << der << endl;
+
+  P_out = prop + der + integ;
 
   if (P_out <= -1 * delta)
     throttle = 0;
@@ -47,20 +62,27 @@ void autopilot(void)
   }
 
   cout
-      << "delta: " << delta << endl
-      << "thr: " << throttle << endl
-      << endl;
+      << "p_out: " << P_out << endl
+      << "thr: " << throttle << " sum_errors: " << sum_errors << endl;
 
   ofstream fout;
   fout.open("trajectory5.txt", std::ios_base::app);
   if (fout)
   { // file opened successfully
-    fout << simulation_time << ' ' << h << ' ' << descent_rate << endl;
+    fout << simulation_time << ' ' << h << ' ' << descent_rate << ' ' << throttle
+         << ' ' << prop << ' ' << integ << ' ' << deriv << endl;
   }
   else
   { // file did not open successfully
     cout << "failed to open file" << endl;
   }
+  cout << endl;
+  if (e * e < 600 * 600)
+    sum_errors += ((e + previous_error) / 2) * delta_t;
+  else
+    sum_errors = 0;
+  previous_error = e;
+  attitude_stabilization();
 }
 
 void numerical_dynamics(void)
@@ -81,6 +103,12 @@ void numerical_dynamics(void)
     F_d *= (DRAG_COEF_LANDER + DRAG_COEF_CHUTE);
   else
     F_d *= DRAG_COEF_LANDER;
+
+  if (simulation_time == 0)
+  {
+    ofstream fout;
+    fout.open("trajectory5.txt");
+  }
 
   F_res = F_t + F_g + F_d;
   a = F_res / current_mass;
