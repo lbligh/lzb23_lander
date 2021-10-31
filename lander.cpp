@@ -161,9 +161,9 @@ void initialize_simulation(void)
   scenario_description[3] = "polar launch at escape velocity (but drag prevents escape)";
   scenario_description[4] = "elliptical orbit that clips the atmosphere and decays";
   scenario_description[5] = "descent from 200km";
-  scenario_description[6] = "";
-  scenario_description[7] = "";
-  scenario_description[8] = "";
+  scenario_description[6] = "descent from 500m";
+  scenario_description[7] = "descent from 510m";
+  scenario_description[8] = "descent from 700m";
   scenario_description[9] = "";
 
   switch (scenario)
@@ -236,12 +236,36 @@ void initialize_simulation(void)
     break;
 
   case 6:
+    // a descent from rest at 500m altitude
+    position = vector3d(0.0, -(MARS_RADIUS + 500.0), 0.0);
+    velocity = vector3d(0.0, 0.0, 0.0);
+    orientation = vector3d(0.0, 0.0, 90.0);
+    delta_t = 0.01;
+    parachute_status = NOT_DEPLOYED;
+    stabilized_attitude = true;
+    autopilot_enabled = true;
     break;
 
   case 7:
+    // a descent from rest at 510m altitude
+    position = vector3d(0.0, -(MARS_RADIUS + 510.0), 0.0);
+    velocity = vector3d(0.0, 0.0, 0.0);
+    orientation = vector3d(0.0, 0.0, 90.0);
+    delta_t = 0.01;
+    parachute_status = NOT_DEPLOYED;
+    stabilized_attitude = true;
+    autopilot_enabled = true;
     break;
 
   case 8:
+    // a descent from rest at 700m altitude
+    position = vector3d(0.0, -(MARS_RADIUS + 700.0), 0.0);
+    velocity = vector3d(0.0, 0.0, 0.0);
+    orientation = vector3d(0.0, 0.0, 90.0);
+    delta_t = 0.01;
+    parachute_status = NOT_DEPLOYED;
+    stabilized_attitude = true;
+    autopilot_enabled = true;
     break;
 
   case 9:
